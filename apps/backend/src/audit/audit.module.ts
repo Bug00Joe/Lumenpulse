@@ -4,6 +4,7 @@ import { AuditLog } from './entities/audit-log.entity';
 import { AuditService } from './audit.service';
 import { AuditController } from './audit.controller';
 import { AuditLogInterceptor } from './interceptors/audit-log.interceptor';
+import { AuditRetentionService } from './audit-retention.service';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -12,7 +13,7 @@ import { UsersModule } from '../users/users.module';
     forwardRef(() => UsersModule),
   ],
   controllers: [AuditController],
-  providers: [AuditService, AuditLogInterceptor],
+  providers: [AuditService, AuditLogInterceptor, AuditRetentionService],
   exports: [AuditService, AuditLogInterceptor],
 })
 export class AuditModule {}
