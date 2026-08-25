@@ -4,10 +4,11 @@ import { AdminBlockchainAuditLog } from './entities/admin-blockchain-audit-log.e
 import { AdminAuditService } from './admin-audit.service';
 import { AdminAuditController } from './admin-audit.controller';
 import { AdminAuditInterceptor } from './interceptors/admin-audit.interceptor';
+import { AdminAuditRetentionService } from './admin-audit-retention.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AdminBlockchainAuditLog])],
-  providers: [AdminAuditService, AdminAuditInterceptor],
+  providers: [AdminAuditService, AdminAuditInterceptor, AdminAuditRetentionService],
   controllers: [AdminAuditController],
   exports: [AdminAuditService, AdminAuditInterceptor],
 })
