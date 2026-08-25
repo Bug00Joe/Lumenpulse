@@ -10,6 +10,8 @@ import {
 @Index(['actorId'])
 @Index(['endpoint'])
 @Index(['createdAt'])
+@Index(['type', 'createdAt'])
+@Index(['actorId', 'createdAt'])
 export class AdminBlockchainAuditLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -25,6 +27,10 @@ export class AdminBlockchainAuditLog {
   /** HTTP method + path e.g. "POST /grants/rounds" */
   @Column({ type: 'varchar', length: 500 })
   endpoint: string;
+
+  /** Type of audit record, used for retention policy determination */
+  @Column({ type: 'varchar', length: 100 })
+  type: string;
 
   /**
    * Target smart contract address or identifier.
@@ -48,6 +54,10 @@ export class AdminBlockchainAuditLog {
   /** HTTP status code of the response */
   @Column({ type: 'int', nullable: true })
   responseStatus: number | null;
+
+  /** Timestamp when this record was archived (if archived instead of purged) */
+  @Column({ type: 'timestamp', nullable: true })
+  archivedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
