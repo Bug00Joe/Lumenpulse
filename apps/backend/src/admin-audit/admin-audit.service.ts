@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions, Between } from 'typeorm';
+import { Repository, FindManyOptions, Between, LessThan, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { AdminBlockchainAuditLog } from './entities/admin-blockchain-audit-log.entity';
+
+export const ADMIN_AUDIT_RETENTION_DAYS = 365;
 
 /** Fields that must be redacted before persistence */
 const SENSITIVE_KEYS = new Set([
@@ -114,5 +116,36 @@ export class AdminAuditService {
     });
 
     return { data, total };
+  }
+
+  async purgeOldLogs(now: Date = new Date()): Promise<number> {
+    const cutoff = new Date(now);
+    cutoff.setDate(cutoff.getDate() - ADMIN_AUDIT_RETENTION_DAYS);
+    const result = await this.repo.delete({ createdAt: LessThan(cutoff) });
+    return result.affected ?? 0;
+  }
+
+  async exportLogs(
+    from?: Date,
+    to?: Date,
+    actorId?: string,
+  ): Promise<AdminBlockchainAuditLog[]> {
+    const where: FindManyOptions<AdminBlockchainAuditLog>['where'] = {};
+    if (actorId) {
+      (where as Record<string, unknown>).actorId = actorId;
+    }
+
+    if (from && to) {
+      (where as Record<string, unknown>).createdAt = Between(from, to);
+    } else if (from) {
+      (where as Record<string, unknown>).createdAt = MoreThanOrEqual(from);
+    } else if (to) {
+      (where as Record<string, unknown>).createdAt = LessThanOrEqual(to);
+    }
+
+    return this.repo.find({
+      where,
+      order: { createdAt: 'ASC' },
+    });
   }
 }
