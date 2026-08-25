@@ -22,6 +22,10 @@ export class AuditLog {
   @Index()
   action: string;
 
+  @Column({ type: 'varchar', length: 50, default: 'system' })
+  @Index()
+  type: string;
+
   @Column({ type: 'varchar', length: 45, nullable: true })
   ipAddress: string | null;
 
@@ -31,6 +35,10 @@ export class AuditLog {
   @CreateDateColumn({ type: 'timestamp with time zone' })
   @Index()
   createdAt: Date;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Index()
+  archivedAt: Date | null;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'userId' })
