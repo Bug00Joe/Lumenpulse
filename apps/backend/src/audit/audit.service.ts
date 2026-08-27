@@ -1,4 +1,4 @@
-import { Injectable } from 'nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';

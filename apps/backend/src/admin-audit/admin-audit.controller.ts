@@ -67,7 +67,7 @@ export class AdminAuditController {
     };
   }
 
-  @Pet('export')
+  @Get('export')
   @ApiOperation({
     summary: 'Export admin blockchain audit logs as JSON (admin only)',
     description:
