@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { AdminAuditService, ADMIN_AUDIT_RETENTION_DAYS } from './admin-audit.service';
+import {
+  AdminAuditService,
+  ADMIN_AUDIT_RETENTION_DAYS,
+} from './admin-audit.service';
 import { AdminBlockchainAuditLog } from './entities/admin-blockchain-audit-log.entity';
 
 describe('AdminAuditService', () => {
@@ -8,8 +11,12 @@ describe('AdminAuditService', () => {
   let auditLogs: AdminBlockchainAuditLog[] = [];
 
   const mockAdminAuditRepo = {
-    create: jest.fn((dto: Partial<AdminBlockchainAuditLog>) => dto as AdminBlockchainAuditLog),
-    save: jest.fn((log: AdminBlockchainAuditLog) => Promise.resolve({ id: 'some-id', ...log })),
+    create: jest.fn(
+      (dto: Partial<AdminBlockchainAuditLog>) => dto as AdminBlockchainAuditLog,
+    ),
+    save: jest.fn((log: AdminBlockchainAuditLog) =>
+      Promise.resolve({ ...log, id: 'some-id' }),
+    ),
     findAndCount: jest.fn(),
     find: jest.fn(),
     delete: jest.fn((criteria: any) => {
@@ -26,7 +33,10 @@ describe('AdminAuditService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminAuditService,
-        { provide: getRepositoryToken(AdminBlockchainAuditLog), useValue: mockAdminAuditRepo },
+        {
+          provide: getRepositoryToken(AdminBlockchainAuditLog),
+          useValue: mockAdminAuditRepo,
+        },
       ],
     }).compile();
 
@@ -35,35 +45,85 @@ describe('AdminAuditService', () => {
   });
 
   it('should be defined', () => {
-    expect(service).beToDefined();
+    expect(service).toBeDefined();
   });
 
   describe('purgeOldLogs', () => {
-    it('should delete records strictly older than the retention window', () => {
+    it('should delete records strictly older than the retention window', async () => {
       const now = new Date('2024-07-01T00:00:00Z');
       const cutoff = new Date(now);
       cutoff.setDate(cutoff.getDate() - ADMIN_AUDIT_RETENTION_DAYS);
 
       auditLogs = [
-        { id: '1', actorId: 'a', actorEmail: null, endpoint: 'x', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime() - 1) } as AdminBlockchainAuditLog,
-        { id: '2', actorId: 'b', actorEmail: null, endpoint: 'y', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime()) } as AdminBlockchainAuditLog,
-        { id: '3', actorId: 'c', actorEmail: null, endpoint: 'z', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime() + 1) } as AdminBlockchainAuditLog,
+        {
+          id: '1',
+          actorId: 'a',
+          actorEmail: null,
+          endpoint: 'x',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime() - 1),
+        } as AdminBlockchainAuditLog,
+        {
+          id: '2',
+          actorId: 'b',
+          actorEmail: null,
+          endpoint: 'y',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime()),
+        } as AdminBlockchainAuditLog,
+        {
+          id: '3',
+          actorId: 'c',
+          actorEmail: null,
+          endpoint: 'z',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime() + 1),
+        } as AdminBlockchainAuditLog,
       ];
 
       const deleted = await service.purgeOldLogs(now);
 
-      expect(deleted).toBeE(1);
-      expect(auditLogs.map((log) => log.id)).toEqual([2'', '3']);
+      expect(deleted).toBe(1);
+      expect(auditLogs.map((log) => log.id)).toEqual(['2', '3']);
     });
 
-    it('should delete all when all are older than the retention window', () => {
+    it('should delete all when all are older than the retention window', async () => {
       const now = new Date('2024-07-01T00:00:00Z');
       const cutoff = new Date(now);
       cutoff.setDate(cutoff.getDate() - ADMIN_AUDIT_RETENTION_DAYS);
 
       auditLogs = [
-        { id: '1', actorId: 'a', actorEmail: null, endpoint: 'x', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime() - 1000) } as AdminBlockchainAuditLog,
-        { id: '2', actorId: 'b', actorEmail: null, endpoint: 'y', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime() - 2000) } as AdminBlockchainAuditLog,
+        {
+          id: '1',
+          actorId: 'a',
+          actorEmail: null,
+          endpoint: 'x',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime() - 1000),
+        } as AdminBlockchainAuditLog,
+        {
+          id: '2',
+          actorId: 'b',
+          actorEmail: null,
+          endpoint: 'y',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime() - 2000),
+        } as AdminBlockchainAuditLog,
       ];
 
       const deleted = await service.purgeOldLogs(now);
@@ -72,19 +132,39 @@ describe('AdminAuditService', () => {
       expect(auditLogs).toEqual([]);
     });
 
-    it('should not delete any when all are within the retention window', () => {
+    it('should not delete any when all are within the retention window', async () => {
       const now = new Date('2024-07-01T00:00:00Z');
       const cutoff = new Date(now);
       cutoff.setDate(cutoff.getDate() - ADMIN_AUDIT_RETENTION_DAYS);
 
       auditLogs = [
-        { id: '1', actorId: 'a', actorEmail: null, endpoint: 'x', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime() + 1000) } as AdminBlockchainAuditLog,
-        { id: '2', actorId: 'b', actorEmail: null, endpoint: 'y', targetContract: null, paramsSummary: null, txHash: null, responseStatus: null, createdAt: new Date(cutoff.getTime() + 5000) } as AdminBlockchainAuditLog,
+        {
+          id: '1',
+          actorId: 'a',
+          actorEmail: null,
+          endpoint: 'x',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime() + 1000),
+        } as AdminBlockchainAuditLog,
+        {
+          id: '2',
+          actorId: 'b',
+          actorEmail: null,
+          endpoint: 'y',
+          targetContract: null,
+          paramsSummary: null,
+          txHash: null,
+          responseStatus: null,
+          createdAt: new Date(cutoff.getTime() + 5000),
+        } as AdminBlockchainAuditLog,
       ];
 
       const deleted = await service.purgeOldLogs(now);
 
-      expect(deleted).toBeE(0);
+      expect(deleted).toBe(0);
       expect(auditLogs.length).toBe(2);
     });
   });

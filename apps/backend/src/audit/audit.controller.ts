@@ -15,7 +15,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -76,10 +76,29 @@ export class AuditController {
     description:
       'Exports audit logs filtered by optional date range and actor ID. The export itself is recorded in the audit log.',
   })
-  @ApiQuery({ name: 'from', required: false, type: String, description: 'Start date (ISO 8601)' })
-  @ApiQuery({ name: 'to', required: false, type: String, description: 'End date (ISO 8601)' })
-  @ApiQuery({ name: 'actorId', required: false, type: String, description: 'User ID to filter by' })
-  @ApiResponse({ status: 200, description: 'Exported audit logs', schema: { type: 'array' } })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    type: String,
+    description: 'Start date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    type: String,
+    description: 'End date (ISO 8601)',
+  })
+  @ApiQuery({
+    name: 'actorId',
+    required: false,
+    type: String,
+    description: 'User ID to filter by',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Exported audit logs',
+    schema: { type: 'array' },
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden (admin only)' })
   @Header('Content-Type', 'application/json')

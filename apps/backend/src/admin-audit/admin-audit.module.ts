@@ -8,7 +8,11 @@ import { AdminAuditRetentionService } from './admin-audit-retention.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AdminBlockchainAuditLog])],
-  providers: [AdminAuditService, AdminAuditInterceptor, AdminAuditRetentionService],
+  providers: [
+    AdminAuditService,
+    AdminAuditInterceptor,
+    AdminAuditRetentionService,
+  ],
   controllers: [AdminAuditController],
   exports: [AdminAuditService, AdminAuditInterceptor],
 })

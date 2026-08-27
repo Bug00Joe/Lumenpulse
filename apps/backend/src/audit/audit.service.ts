@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
+import {
+  Repository,
+  LessThan,
+  MoreThanOrEqual,
+  LessThanOrEqual,
+  Between,
+} from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 
 export const AUDIT_LOG_RETENTION_DAYS = 90;
@@ -42,7 +48,9 @@ export class AuditService {
   async purgeOldLogs(now: Date = new Date()): Promise<number> {
     const cutoff = new Date(now);
     cutoff.setDate(cutoff.getDate() - AUDIT_LOG_RETENTION_DAYS);
-    const result = await this.auditLogRepo.delete({ createdAt: LessThan(cutoff) });
+    const result = await this.auditLogRepo.delete({
+      createdAt: LessThan(cutoff),
+    });
     return result.affected ?? 0;
   }
 
